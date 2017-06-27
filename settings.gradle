@@ -1,1 +1,1 @@
-include ':android-app', ':java-research'
+include ':android-app', ':java-research', ':recycleview'

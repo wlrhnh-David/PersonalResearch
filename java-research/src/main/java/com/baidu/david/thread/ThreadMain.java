@@ -37,8 +37,10 @@ public class ThreadMain {
         System.out.println("bean.mDown = " + bean.mDown);
         System.out.println("atomicInteger = " + atomicInteger);*/
 
-        ProductThread productThread = new ProductThread(mGoodsList);
-        productThread.start();
+        ProductThread productThread1 = new ProductThread("P1", mGoodsList);
+        productThread1.start();
+        ProductThread productThread2 = new ProductThread("P2", mGoodsList);
+        productThread2.start();
 
         Object mLocker = new Object();
         CustomThread customThread1 = new CustomThread("C1", mGoodsList);

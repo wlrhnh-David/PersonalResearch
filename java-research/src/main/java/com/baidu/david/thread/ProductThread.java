@@ -10,7 +10,8 @@ public class ProductThread extends Thread {
     private List<String> mGoodsList;
     private int index;
 
-    public ProductThread(List<String> goodsList) {
+    public ProductThread(String name, List<String> goodsList) {
+        super(name);
         mGoodsList = goodsList;
     }
 
@@ -18,10 +19,10 @@ public class ProductThread extends Thread {
     public void run() {
         synchronized (mGoodsList) {
             while (true) {
-                System.out.println("我是生产者=================");
+                System.out.println("我是生产者 " + Thread.currentThread().getName() + "=================");
 
                 if (mGoodsList.size() >= 8) {
-                    System.out.println("我是生产者，消费者呢，妈的赶紧吃 ）-（ ");
+                    System.out.println("我是生产者 " + Thread.currentThread().getName() + "，消费者呢，妈的赶紧吃(-_-) ");
                     System.out.println();
                     System.out.println();
 
@@ -38,7 +39,7 @@ public class ProductThread extends Thread {
                     index++;
                     String good = "土豆-" + index;
                     mGoodsList.add(good);
-                    System.out.println("我是生产者，生产good = " + good + "， 总共：" + mGoodsList.size());
+                    System.out.println("我是生产者 " + Thread.currentThread().getName() + "，生产good = " + good + "， 总共：" + mGoodsList.size());
                 }
             }
         }

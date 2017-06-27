@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/PersonalResearch.iml" filepath="$PROJECT_DIR$/PersonalResearch.iml" />
       <module fileurl="file://$PROJECT_DIR$/android-app/android-app.iml" filepath="$PROJECT_DIR$/android-app/android-app.iml" />
       <module fileurl="file://$PROJECT_DIR$/java-research/java-research.iml" filepath="$PROJECT_DIR$/java-research/java-research.iml" />
+      <module fileurl="file://$PROJECT_DIR$/recycleview/recycleview.iml" filepath="$PROJECT_DIR$/recycleview/recycleview.iml" />
     </modules>
   </component>
 </project>
