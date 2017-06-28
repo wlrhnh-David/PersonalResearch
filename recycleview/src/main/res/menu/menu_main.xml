@@ -1,0 +1,31 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context=".MainActivity">
+
+    <item
+        android:id="@+id/action_normal_list"
+        android:title="Linear布局"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_normal_grid"
+        android:title="Grid布局"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_normal_staggered"
+        android:title="Stagged布局"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_multiple_list"
+        android:title="@string/multiple_list"
+        android:orderInCategory="100"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_multiple_grid"
+        android:title="@string/multiple_grid"
+        app:showAsAction="never"/>
+</menu>
