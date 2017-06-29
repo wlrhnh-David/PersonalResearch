@@ -1,4 +1,4 @@
-package com.baidu.weiwei22.personalresearch.recycle;
+package com.baidu.weiwei22.personalresearch.recycler_view;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;

@@ -1,10 +1,12 @@
-package com.baidu.weiwei22.personalresearch;
+package com.baidu.weiwei22.personalresearch.fragment;
 
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.baidu.weiwei22.personalresearch.R;
 
 /**
  * A placeholder fragment containing a simple view.

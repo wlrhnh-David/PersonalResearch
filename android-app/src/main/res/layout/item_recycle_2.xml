@@ -8,6 +8,7 @@
         android:id="@+id/tv"
         android:layout_width="match_parent"
         android:layout_height="80dp"
+        android:layout_centerVertical="true"
         android:gravity="center_vertical">
 
         <TextView
@@ -27,4 +28,10 @@
             android:textColor="#fff"
             android:gravity="center"/>
     </LinearLayout>
+
+    <View
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="#fff"/>
 </RelativeLayout>

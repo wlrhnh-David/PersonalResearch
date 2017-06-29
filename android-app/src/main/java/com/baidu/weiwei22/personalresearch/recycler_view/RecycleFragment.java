@@ -1,4 +1,4 @@
-package com.baidu.weiwei22.personalresearch.recycle;
+package com.baidu.weiwei22.personalresearch.recycler_view;
 
 import android.content.Context;
 import android.graphics.BitmapFactory;
@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.OnScrollListener;
@@ -19,23 +20,25 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.baidu.weiwei22.personalresearch.R;
+import com.baidu.weiwei22.personalresearch.wapped_common.WrappedRecyclerAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static android.support.v7.widget.RecyclerView.*;
 
 /**
  * Created by weiwei22 on 17/6/27.
  */
 
 public class RecycleFragment extends Fragment {
-    private TextView mBtn;
+    private TextView mBtn, mBtn1;
     private RecyclerView mRecycleView;
-    private RecyclerView.Adapter mAdapter;
+    private Adapter mAdapter;
     private StaggeredGridLayoutManager mLayoutManager;
     MyItemDecoration mItemDecoration;
 
@@ -60,22 +63,34 @@ public class RecycleFragment extends Fragment {
         Log.e("David-----------", "onCreateView rootView = " + rootView.getId() + ", rootView.getParent = " + rootView.getParent());
 
         mBtn = (TextView) rootView.findViewById(R.id.btn);
+        mBtn1 = (TextView) rootView.findViewById(R.id.btn1);
         mBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mLayoutManager.setOrientation(mLayoutManager.getOrientation() == LinearLayoutManager.HORIZONTAL ? LinearLayoutManager.VERTICAL : LinearLayoutManager.HORIZONTAL);
+                /*mLayoutManager.setOrientation(mLayoutManager.getOrientation() == LinearLayoutManager.HORIZONTAL ? LinearLayoutManager.VERTICAL : LinearLayoutManager.HORIZONTAL);
                 mItemDecoration.setOrientation(mLayoutManager.getOrientation());
                 mRecycleView.addItemDecoration(mItemDecoration);
-                mRecycleView.requestLayout();
+                mRecycleView.requestLayout();*/
+                Log.e("Dbn", "onClick-----");
+                addHeaderFooter(2, (WrappedRecyclerAdapter) mAdapter);
+//                mAdapter.notifyDataSetChanged();
+            }
+        });
+
+        mBtn1.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((WrappedRecyclerAdapter)mAdapter).removeHeaderView(mH);
+//                mAdapter.notifyDataSetChanged();
             }
         });
 
         mRecycleView = (RecyclerView) rootView.findViewById(R.id.recycle_view);
-        mLayoutManager = new StaggeredGridLayoutManager(3, LinearLayoutManager.VERTICAL);
-//        mRecycleView.setLayoutManager(new GridLayoutManager(getContext(), 4, LinearLayoutManager.HORIZONTAL, true));
-        mRecycleView.setLayoutManager(mLayoutManager);
-//        mRecycleView.setLayoutManager(new StaggeredGridLayoutManager(1, LinearLayoutManager.VERTICAL));
-        mAdapter = new RecyclePinterestAdapter(getContext());
+//        mLayoutManager = new LinearLayoutManager(getContext());
+//        mRecycleView.setLayoutManager(new LinearLayoutManager(getContext()));
+//        mRecycleView.setLayoutManager(new GridLayoutManager(getContext(), 2, LinearLayoutManager.VERTICAL, false));
+        mRecycleView.setLayoutManager(new StaggeredGridLayoutManager(3, LinearLayoutManager.VERTICAL));
+        mAdapter = getWrappedAdapter(new RecyclePinterestAdapter(getContext()));
         mRecycleView.setAdapter(mAdapter);
 
         mRecycleView.addOnScrollListener(new OnScrollListener() {
@@ -92,7 +107,7 @@ public class RecycleFragment extends Fragment {
             }
         });
 
-        mRecycleView.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
+        mRecycleView.addOnChildAttachStateChangeListener(new OnChildAttachStateChangeListener() {
             @Override
             public void onChildViewAttachedToWindow(View view) {
                 Log.e("DAVID", "onChildViewAttachedToWindow view = " + view);
@@ -104,8 +119,6 @@ public class RecycleFragment extends Fragment {
             }
         });
 
-        mRecycleView.
-
 //        mItemDecoration = new MyItemDecoration(getContext());
 //        mItemDecoration.setOrientation(LinearLayoutManager.VERTICAL);
 //        mRecycleView.addItemDecoration(mItemDecoration);
@@ -113,15 +126,43 @@ public class RecycleFragment extends Fragment {
         return rootView;
     }
 
-    private static class RecyclePinterestAdapter extends RecyclerView.Adapter<RecycleViewHolder> {
+    private RecyclerView.Adapter getWrappedAdapter(RecyclerView.Adapter adapter) {
+        WrappedRecyclerAdapter wrappedRecyclerAdapter = new WrappedRecyclerAdapter(adapter);
 
-        private Context mContext;
+        addHeaderFooter(1, wrappedRecyclerAdapter);
+
+        return wrappedRecyclerAdapter;
+    }
+
+    RecycleViewHolder mH;
+    private void addHeaderFooter(int index, WrappedRecyclerAdapter wrappedRecyclerAdapter) {
+        View headerView = LayoutInflater.from(getContext()).inflate(R.layout.item_recycle, null);
+        RecycleViewHolder holder = new RecycleViewHolder(headerView);
+        holder.setLayoutParams(getContext().getResources().getDisplayMetrics().widthPixels, index == 1 ? 400 : 2000, index == 1 ? Color.CYAN : Color.RED);
+        holder.bindData(0, "我是Header");
+        wrappedRecyclerAdapter.addHeaderView(holder);
+        mH = holder;
+
+        View footerView = LayoutInflater.from(getContext()).inflate(R.layout.item_recycle_2, null);
+        RecycleViewHolder2 holder2 = new RecycleViewHolder2(footerView);
+        holder2.bindData(101, "我是Footer");
+        wrappedRecyclerAdapter.addFooterView(holder2);
+    }
+
+    /**
+     * 瀑布流Adapter
+     */
+    private static class RecyclePinterestAdapter extends RecyclerView.Adapter {
+
         private List<String> mData = new ArrayList<>();
         private int[] mHeights = new int[30];
         private int[] mColors = new int[30];
 
+        private Context mContext;
+
         public RecyclePinterestAdapter(Context context) {
             mContext = context;
+
             for (int i = 0; i < 30; i++) {
                 mData.add("数据---" + i);
                 mHeights[i] = (int)(200 + Math.random() * 400);
@@ -131,7 +172,41 @@ public class RecycleFragment extends Fragment {
                 String color = "#" + (c1.length() == 2 ? c1 : c1 + "0") + (c2.length() == 2 ? c2 : c2 + "0") + (c3.length() == 2 ? c3 : c3 + "0");
                 mColors[i] = Color.parseColor(color);
             }
+
+//            View headerView = LayoutInflater.from(mContext).inflate(R.layout.item_recycle, null);
+//            addHeaderView(headerView);
+//
+//
+//            View footerView = LayoutInflater.from(mContext).inflate(R.layout.item_recycle_2, null);
+//            addFooterView(footerView);
         }
+
+//        public void addHeaderViewN() {
+//            View headerView1 = LayoutInflater.from(mContext).inflate(R.layout.item_recycle, null);
+//            addHeaderView(headerView1);
+//        }
+//
+//        public void addFooterViewN() {
+//            View footerView1 = LayoutInflater.from(mContext).inflate(R.layout.item_recycle_2, null);
+//            addFooterView(footerView1);
+//        }
+
+//        @Override
+//        public RecycleViewHolder onCreateHeaderViewHolder(ViewGroup parent, int viewType, View view) {
+//            Log.e("WrappedRecyclerAdapter", "onCreateHeaderViewHolder view = " + view);
+//            RecycleViewHolder holder = new RecycleViewHolder(view);
+//            holder.setLayoutParams(mContext.getResources().getDisplayMetrics().widthPixels, 400, Color.CYAN);
+//            holder.bindData(0, "我是Header");
+//            return holder;
+//        }
+//
+//        @Override
+//        public RecycleViewHolder2 onCreateFooterViewHolder(ViewGroup parent, int viewType, View view) {
+//            Log.e("WrappedRecyclerAdapter", "onCreateFooterViewHolder view = " + view);
+//            RecycleViewHolder2 holder = new RecycleViewHolder2(view);
+//            holder.bindData(101, "我是Footer");
+//            return holder;
+//        }
 
         @Override
         public RecycleViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -140,7 +215,8 @@ public class RecycleFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(RecycleViewHolder holder, final int position) {
+        public void onBindViewHolder(RecyclerView.ViewHolder h, final int position) {
+            RecycleViewHolder holder = (RecycleViewHolder) h;
             holder.setLayoutParams(mContext.getResources().getDisplayMetrics().widthPixels, mHeights[position], mColors[position]);
             holder.bindData(position, mData.get(position));
             holder.setonClickListener(new View.OnClickListener() {
@@ -152,61 +228,165 @@ public class RecycleFragment extends Fragment {
         }
 
         @Override
+        public int getItemViewType(int position) {
+            return 0;
+        }
+
+        @Override
         public int getItemCount() {
             return mData.size();
         }
     }
 
-    /**
-     * 不同的ViewType
-     */
-    private static class RecycleViewAdapter extends RecyclerView.Adapter {
+
+    //=============
+    /*private static class InheritanceAdapter extends WrappedRecyclerAdapter {
         private Context mContext;
         private List<String> mData = new ArrayList<>();
 
-        public RecycleViewAdapter(Context context) {
+        public InheritanceAdapter(Context context) {
+            Log.e("InheritanceAdapter", "RecycleViewAdapter");
             mContext = context;
-            for (int i = 0; i < 30; i++) {
+            for (int i = 0; i < 101; i++) {
                 mData.add("数据---" + i);
             }
+
+            View headerView = LayoutInflater.from(mContext).inflate(R.layout.item_recycle, null);
+            addHeaderView(headerView);
+            View footerView = LayoutInflater.from(mContext).inflate(R.layout.item_recycle_2, null);
+            addFooterView(footerView);
         }
 
         @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public RecycleViewHolder onCreateHeaderViewHolder(ViewGroup parent, int viewType, View view) {
+            Log.e("WrappedRecyclerAdapter", "onCreateHeaderViewHolder view = " + view);
+            RecycleViewHolder holder = new RecycleViewHolder(view);
+            holder.setLayoutParams(mContext.getResources().getDisplayMetrics().widthPixels, 400, Color.CYAN);
+            holder.bindData(0, "我是Header");
+            return holder;
+        }
+
+        @Override
+        public RecycleViewHolder2 onCreateFooterViewHolder(ViewGroup parent, int viewType, View view) {
+            Log.e("WrappedRecyclerAdapter", "onCreateFooterViewHolder view = " + view);
+            RecycleViewHolder2 holder = new RecycleViewHolder2(view);
+//            holder.setLayoutParams(mContext.getResources().getDisplayMetrics().widthPixels, 220, Color.RED);
+            holder.bindData(101, "我是Footer");
+            return holder;
+        }
+
+        @Override
+        public RecycleViewHolder onCreateViewHolderN(ViewGroup parent, int viewType) {
+            View holderView = LayoutInflater.from(mContext).inflate(R.layout.item_recycle, parent, false);
+            return new RecycleViewHolder(holderView);
+        }
+
+        @Override
+        public void onBindViewHolderN(ViewHolder holder, int position) {
+            ((RecycleViewHolder)holder).bindData(position, mData.get(position));
+        }
+
+        @Override
+        public int getItemViewTypeN(int position) {
+            return NORMAL_VIEW_TYPE;
+        }
+
+        @Override
+        public int getItemCountN() {
+            return mData.size();
+        }
+    }*/
+
+    //=============
+
+
+    /**
+     * 不同的ViewType
+     */
+    private static class RecycleViewAdapter extends Adapter {
+        private Context mContext;
+        private List<String> mData = new ArrayList<>();
+        private View mHeaderView;
+
+        public RecycleViewAdapter(Context context) {
+            Log.e("D1AVID", "RecycleViewAdapter");
+            mContext = context;
+            for (int i = 0; i < 120; i++) {
+                mData.add("数据---" + i);
+            }
+
+            mHeaderView = LayoutInflater.from(mContext).inflate(R.layout.item_recycle_2, null);
+            RecycleViewHolder2 holder2 = new RecycleViewHolder2(mHeaderView);
+            holder2.bindData(10, "我是Header");
+        }
+
+        @Override
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             Log.e("David-----------", "onCreateViewHolder parent = " + parent.getId());
             View holderView = null;
             if (0 == viewType) {
                 holderView = LayoutInflater.from(mContext).inflate(R.layout.item_recycle, parent, false);
                 return new RecycleViewHolder(holderView);
             } else if (1 == viewType) {
-                holderView = LayoutInflater.from(mContext).inflate(R.layout.item_recycle_2, parent, false);
-                return new RecycleViewHolder2(holderView);
+//                holderView = LayoutInflater.from(mContext).inflate(R.layout.item_recycle_2, parent, false);
+                return new RecycleViewHolder2(mHeaderView);
             }
             return null;
         }
 
         @Override
-        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        public void onBindViewHolder(ViewHolder holder, int position) {
             int viewType = getItemViewType(position);
             if (0 == viewType) {
-                ((RecycleViewHolder)holder).bindData(position, mData.get(position));
+                ((RecycleViewHolder)holder).bindData(position, mData.get(getRealPosition(holder)));
             } else if (1 == viewType) {
-                ((RecycleViewHolder2)holder).bindData(position, mData.get(position));
+                return;//((RecycleViewHolder2)holder).bindData(position, mData.get(position));
             }
         }
 
         @Override
         public int getItemCount() {
-            return mData.size();
+            return mHeaderView != null ? mData.size() + 1 : mData.size();
         }
 
         @Override
         public int getItemViewType(int position) {
-            return position % 2 == 0 ? 0 : 1;
+            return position == 0 ? 1 : 0;
+        }
+
+        private int getRealPosition(ViewHolder holder) {
+            int pos = holder.getLayoutPosition();
+            return mHeaderView == null ? pos : pos - 1;
+        }
+
+        @Override
+        public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+            super.onAttachedToRecyclerView(recyclerView);
+            final LayoutManager layoutManager = recyclerView.getLayoutManager();
+            if (layoutManager instanceof GridLayoutManager) {
+                Log.e("D1AVID", "onAttachedToRecyclerView");
+                ((GridLayoutManager)layoutManager).setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+                    @Override
+                    public int getSpanSize(int position) {
+                        return getItemViewType(position) == 1 ? ((GridLayoutManager) layoutManager).getSpanCount() : 1;
+                    }
+                });
+            }
+        }
+
+        @Override
+        public void onViewAttachedToWindow(ViewHolder holder) {
+            super.onViewAttachedToWindow(holder);
+            ViewGroup.LayoutParams params = holder.itemView.getLayoutParams();
+            if (params != null && params instanceof StaggeredGridLayoutManager.LayoutParams) {
+                if (holder.getLayoutPosition() == 0) {
+                    ((StaggeredGridLayoutManager.LayoutParams) params).setFullSpan(true);
+                }
+            }
         }
     }
 
-    private static class RecycleViewHolder extends RecyclerView.ViewHolder {
+    private static class RecycleViewHolder extends ViewHolder {
         private TextView mTv;
 
         public RecycleViewHolder(View itemView) {
@@ -232,7 +412,7 @@ public class RecycleFragment extends Fragment {
         }
     }
 
-    private static class RecycleViewHolder2 extends RecyclerView.ViewHolder {
+    private static class RecycleViewHolder2 extends ViewHolder {
         private TextView mTv1;
         private TextView mTv2;
 
@@ -251,7 +431,7 @@ public class RecycleFragment extends Fragment {
     /**
      * 分割线
      */
-    private static class MyItemDecoration extends RecyclerView.ItemDecoration {
+    private static class MyItemDecoration extends ItemDecoration {
         private int mOrientation = LinearLayoutManager.VERTICAL;
         private Drawable mDividerDrawable;
 
@@ -264,7 +444,7 @@ public class RecycleFragment extends Fragment {
         }
 
         @Override
-        public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
+        public void onDraw(Canvas c, RecyclerView parent, State state) {
             if (LinearLayoutManager.HORIZONTAL == mOrientation) {
                 drawDividerHorizontal(c, parent);
             } else if (LinearLayoutManager.VERTICAL == mOrientation) {
@@ -279,7 +459,7 @@ public class RecycleFragment extends Fragment {
 
             for (int i = 0; i < count; i++) {
                 View child = parent.getChildAt(i);
-                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child.getLayoutParams();
+                LayoutParams params = (LayoutParams) child.getLayoutParams();
                 int top = child.getBottom() + params.bottomMargin;
                 int bottom = top + mDividerDrawable.getIntrinsicHeight();
 
@@ -295,7 +475,7 @@ public class RecycleFragment extends Fragment {
 
             for (int i = 0; i < count; i++) {
                 View child = parent.getChildAt(i);
-                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child.getLayoutParams();
+                LayoutParams params = (LayoutParams) child.getLayoutParams();
                 int left = child.getRight() + params.rightMargin;
                 int right = left + mDividerDrawable.getIntrinsicHeight();
 
@@ -305,7 +485,7 @@ public class RecycleFragment extends Fragment {
         }
 
         @Override
-        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, State state) {
             if (mOrientation == LinearLayoutManager.VERTICAL) {
                 outRect.set(0, 0, 0, mDividerDrawable.getIntrinsicHeight());
             } else {

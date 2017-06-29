@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.baidu.weiwei22.personalresearch.MainActivityFragment"
+    tools:context="com.baidu.weiwei22.personalresearch.fragment.MainActivityFragment"
     tools:showIn="@layout/act_main">
 
     <TextView
