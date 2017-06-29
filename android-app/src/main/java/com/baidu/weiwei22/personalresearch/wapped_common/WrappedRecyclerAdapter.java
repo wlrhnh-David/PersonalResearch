@@ -6,9 +6,7 @@ import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.ViewGroup;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by weiwei22 on 17/6/28.
@@ -25,6 +23,10 @@ public class WrappedRecyclerAdapter extends RecyclerView.Adapter {
 
     public WrappedRecyclerAdapter(RecyclerView.Adapter adapter) {
         mAdapter = adapter;
+    }
+
+    public RecyclerView.Adapter getAdapter() {
+        return mAdapter;
     }
 
     /**
@@ -71,10 +73,7 @@ public class WrappedRecyclerAdapter extends RecyclerView.Adapter {
      * @return
      */
     private RecyclerView.ViewHolder getFirstValidViewHolder(Map<RecyclerView.ViewHolder, Boolean> map) {
-        Set<Map.Entry<RecyclerView.ViewHolder, Boolean>> entrySet = map.entrySet();
-        Iterator<Map.Entry<RecyclerView.ViewHolder, Boolean>> iterator = entrySet.iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<RecyclerView.ViewHolder, Boolean> entry = iterator.next();
+        for (Map.Entry<RecyclerView.ViewHolder, Boolean> entry : map.entrySet()) {
             if (entry.getValue()) {
                 entry.setValue(false);
                 return entry.getKey();

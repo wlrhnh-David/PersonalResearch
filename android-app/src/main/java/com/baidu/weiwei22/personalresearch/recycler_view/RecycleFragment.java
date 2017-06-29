@@ -29,7 +29,15 @@ import com.baidu.weiwei22.personalresearch.wapped_common.WrappedRecyclerAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.support.v7.widget.RecyclerView.*;
+import jp.wasabeef.recyclerview.adapters.SlideInLeftAnimationAdapter;
+
+import static android.support.v7.widget.RecyclerView.Adapter;
+import static android.support.v7.widget.RecyclerView.ItemDecoration;
+import static android.support.v7.widget.RecyclerView.LayoutManager;
+import static android.support.v7.widget.RecyclerView.OnChildAttachStateChangeListener;
+import static android.support.v7.widget.RecyclerView.OnClickListener;
+import static android.support.v7.widget.RecyclerView.State;
+import static android.support.v7.widget.RecyclerView.ViewHolder;
 
 /**
  * Created by weiwei22 on 17/6/27.
@@ -38,7 +46,7 @@ import static android.support.v7.widget.RecyclerView.*;
 public class RecycleFragment extends Fragment {
     private TextView mBtn, mBtn1;
     private RecyclerView mRecycleView;
-    private Adapter mAdapter;
+    private WrappedRecyclerAdapter mAdapter;
     private StaggeredGridLayoutManager mLayoutManager;
     MyItemDecoration mItemDecoration;
 
@@ -72,7 +80,9 @@ public class RecycleFragment extends Fragment {
                 mRecycleView.addItemDecoration(mItemDecoration);
                 mRecycleView.requestLayout();*/
                 Log.e("Dbn", "onClick-----");
-                addHeaderFooter(2, (WrappedRecyclerAdapter) mAdapter);
+//                ((RecyclePinterestAdapter)mAdapter.getAdapter()).addData("Item ---- New");
+//                mAdapter.notifyItemInserted(1);
+//                addHeaderFooter(2, (WrappedRecyclerAdapter) mAdapter);
 //                mAdapter.notifyDataSetChanged();
             }
         });
@@ -80,18 +90,23 @@ public class RecycleFragment extends Fragment {
         mBtn1.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((WrappedRecyclerAdapter)mAdapter).removeHeaderView(mH);
+//                ((WrappedRecyclerAdapter)mAdapter).removeHeaderView(mH);
 //                mAdapter.notifyDataSetChanged();
+//                ((RecyclePinterestAdapter)mAdapter.getAdapter()).removeData();
+//                mAdapter.notifyItemRemoved(1);
             }
         });
 
         mRecycleView = (RecyclerView) rootView.findViewById(R.id.recycle_view);
 //        mLayoutManager = new LinearLayoutManager(getContext());
-//        mRecycleView.setLayoutManager(new LinearLayoutManager(getContext()));
+        mRecycleView.setLayoutManager(new LinearLayoutManager(getContext()));
 //        mRecycleView.setLayoutManager(new GridLayoutManager(getContext(), 2, LinearLayoutManager.VERTICAL, false));
-        mRecycleView.setLayoutManager(new StaggeredGridLayoutManager(3, LinearLayoutManager.VERTICAL));
-        mAdapter = getWrappedAdapter(new RecyclePinterestAdapter(getContext()));
-        mRecycleView.setAdapter(mAdapter);
+//        mRecycleView.setLayoutManager(new StaggeredGridLayoutManager(3, LinearLayoutManager.VERTICAL));
+        mAdapter = (WrappedRecyclerAdapter) getWrappedAdapter(new RecyclePinterestAdapter(getContext()));
+        SlideInLeftAnimationAdapter aa = new SlideInLeftAnimationAdapter(mAdapter);
+        aa.setDuration(300);
+        mRecycleView.setAdapter(aa);
+//        mRecycleView.setItemAnimator(new SlideInUpAnimator());
 
         mRecycleView.addOnScrollListener(new OnScrollListener() {
             @Override
@@ -163,50 +178,26 @@ public class RecycleFragment extends Fragment {
         public RecyclePinterestAdapter(Context context) {
             mContext = context;
 
-            for (int i = 0; i < 30; i++) {
+            for (int i = 0; i < 25; i++) {
                 mData.add("数据---" + i);
-                mHeights[i] = (int)(200 + Math.random() * 400);
-                String c1 = Integer.toHexString((int)(Math.random() * 255));
-                String c2 = Integer.toHexString((int)(Math.random() * 255));
-                String c3 = Integer.toHexString((int)(Math.random() * 255));
+            }
+            for (int i = 0; i < 30; i++) {
+                mHeights[i] = (int) (200 + Math.random() * 400);
+                String c1 = Integer.toHexString((int) (Math.random() * 255));
+                String c2 = Integer.toHexString((int) (Math.random() * 255));
+                String c3 = Integer.toHexString((int) (Math.random() * 255));
                 String color = "#" + (c1.length() == 2 ? c1 : c1 + "0") + (c2.length() == 2 ? c2 : c2 + "0") + (c3.length() == 2 ? c3 : c3 + "0");
                 mColors[i] = Color.parseColor(color);
             }
-
-//            View headerView = LayoutInflater.from(mContext).inflate(R.layout.item_recycle, null);
-//            addHeaderView(headerView);
-//
-//
-//            View footerView = LayoutInflater.from(mContext).inflate(R.layout.item_recycle_2, null);
-//            addFooterView(footerView);
         }
 
-//        public void addHeaderViewN() {
-//            View headerView1 = LayoutInflater.from(mContext).inflate(R.layout.item_recycle, null);
-//            addHeaderView(headerView1);
-//        }
-//
-//        public void addFooterViewN() {
-//            View footerView1 = LayoutInflater.from(mContext).inflate(R.layout.item_recycle_2, null);
-//            addFooterView(footerView1);
-//        }
+        private void addData(String msg) {
+            mData.add(0, msg);
+        }
 
-//        @Override
-//        public RecycleViewHolder onCreateHeaderViewHolder(ViewGroup parent, int viewType, View view) {
-//            Log.e("WrappedRecyclerAdapter", "onCreateHeaderViewHolder view = " + view);
-//            RecycleViewHolder holder = new RecycleViewHolder(view);
-//            holder.setLayoutParams(mContext.getResources().getDisplayMetrics().widthPixels, 400, Color.CYAN);
-//            holder.bindData(0, "我是Header");
-//            return holder;
-//        }
-//
-//        @Override
-//        public RecycleViewHolder2 onCreateFooterViewHolder(ViewGroup parent, int viewType, View view) {
-//            Log.e("WrappedRecyclerAdapter", "onCreateFooterViewHolder view = " + view);
-//            RecycleViewHolder2 holder = new RecycleViewHolder2(view);
-//            holder.bindData(101, "我是Footer");
-//            return holder;
-//        }
+        private void removeData() {
+            mData.remove(0);
+        }
 
         @Override
         public RecycleViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
