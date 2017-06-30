@@ -20,6 +20,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,7 +48,7 @@ public class RecycleFragment extends Fragment {
     private TextView mBtn, mBtn1;
     private RecyclerView mRecycleView;
     private WrappedRecyclerAdapter mAdapter;
-    private StaggeredGridLayoutManager mLayoutManager;
+    private LinearLayoutManager mLayoutManager;
     MyItemDecoration mItemDecoration;
 
     public static RecycleFragment getInstance() {
@@ -63,9 +64,10 @@ public class RecycleFragment extends Fragment {
         Log.e("David-----------", "onCreate");
     }
 
+    private int index;
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(final LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Log.e("David-----------", "onCreateView container = " + container.getId());
         View rootView = LayoutInflater.from(getContext()).inflate(R.layout.frag_recycleview, null);
         Log.e("David-----------", "onCreateView rootView = " + rootView.getId() + ", rootView.getParent = " + rootView.getParent());
@@ -79,11 +81,14 @@ public class RecycleFragment extends Fragment {
                 mItemDecoration.setOrientation(mLayoutManager.getOrientation());
                 mRecycleView.addItemDecoration(mItemDecoration);
                 mRecycleView.requestLayout();*/
-                Log.e("Dbn", "onClick-----");
 //                ((RecyclePinterestAdapter)mAdapter.getAdapter()).addData("Item ---- New");
 //                mAdapter.notifyItemInserted(1);
 //                addHeaderFooter(2, (WrappedRecyclerAdapter) mAdapter);
 //                mAdapter.notifyDataSetChanged();
+                View vv = mLayoutManager.findViewByPosition(index);
+                TextView tv = vv != null ? (TextView) vv.findViewById(R.id.tv) : null;
+                Log.e("Dmk-----------", "index = " + index + ", vv = " + vv + ", tv.txt = " + (tv != null ? tv.getText() : "Null"));
+                index++;
             }
         });
 
@@ -98,8 +103,8 @@ public class RecycleFragment extends Fragment {
         });
 
         mRecycleView = (RecyclerView) rootView.findViewById(R.id.recycle_view);
-//        mLayoutManager = new LinearLayoutManager(getContext());
-        mRecycleView.setLayoutManager(new LinearLayoutManager(getContext()));
+        mLayoutManager = new LinearLayoutManager(getContext());
+        mRecycleView.setLayoutManager(mLayoutManager);
 //        mRecycleView.setLayoutManager(new GridLayoutManager(getContext(), 2, LinearLayoutManager.VERTICAL, false));
 //        mRecycleView.setLayoutManager(new StaggeredGridLayoutManager(3, LinearLayoutManager.VERTICAL));
         mAdapter = (WrappedRecyclerAdapter) getWrappedAdapter(new RecyclePinterestAdapter(getContext()));
@@ -117,8 +122,54 @@ public class RecycleFragment extends Fragment {
 
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                Log.e("DAVID", "onScrolled dx = " + dx + ", dy = " + dy);
+                /**
+                 * 备注：
+                 *   1、LayoutManager.findFirstVisibleItemPosition取到的位置，是屏幕中第一个可见item在Adapter中的position；
+                 *   2、LayoutManager.findLastVisibleItemPosition取到的位置，是屏幕中最后一个可见item在Adapter中的position；
+                 *   3、LayoutManager的getChildAt(position)方法得到的View，如果将LayoutManager.findFirstVisibleItemPosition传入，得到的并不是Adapter中position对应的View，因为缓存机制，LayoutManger
+                 *   并不会缓存所有的View，而是将屏幕中可见的所有的View缓存起来；
+                 *   4、获取屏幕中第一个可见的View，使用LayoutManager.getChildAt(0);
+                 *   5、获取屏幕中最后一个可见的View，使用LayoutManager.getChileAt(lastVPosition - firstVPosition)，因为lastVPosition - firstVPosition + 1就是可见Item的个数，所以0是第一个可见的，lastVPosition - firstVPosition
+                 *   是最后一个可见的(从0开始计的)。
+                 *   6、获取固定位置的View：View vv = mLayoutManager.findViewByPosition(index)，如果当前position的View恰好已经被加载并初始化过，就能取到，否则返回为null;
+                 *   7、LayoutManager.findFirstCompletelyVisibleItemPosition，是屏幕中第一个完全可见的item在Adapter中的position。如果用这个position取对应的View，那肯定是不对的， 原因上面分析过。正确的姿势是：
+                 *   int firstV = mLayoutManager.findFirstVisibleItemPosition();
+                     int firstCompleteV = mLayoutManager.findFirstCompletelyVisibleItemPosition();
+                     int realP = firstV == firstCompleteV ? 0 : 1;
+                     8、最后一个完全可见的item同理可获取到；
+                 */
+                /*Log.e("DAVID", "onScrolled dx = " + dx + ", dy = " + dy);
                 super.onScrolled(recyclerView, dx, dy);
+                Log.e("Dbn", "============================");
+                int firstV = mLayoutManager.findFirstVisibleItemPosition();
+                Log.e("Dbn", "onClick-----mLayoutManager.findFirstVisibleItemPosition() = " + firstV);
+                View view0 = mLayoutManager.getChildAt(0);
+                Log.e("Dbn", "onClick-----firstView top0 = " + view0.getTop() + ", bottom0 = " + view0.getBottom() + ", height = " + view0.getMeasuredHeight());
+                String ttt = (String) ((TextView)view0.findViewById(R.id.tv)).getText();
+                Log.e("Dbn", "onClick-----firstView txt = " + ttt);
+
+                View view1 = mLayoutManager.getChildAt(1);
+                Log.e("Dbn", "onClick-----secondView top1 = " + view1.getTop() + ", bottom1 = " + view1.getBottom() + ", height = " + view1.getMeasuredHeight());
+                String ttt1 = (String) ((TextView)view1.findViewById(R.id.tv)).getText();
+                Log.e("Dbn", "onClick-----secondView txt = " + ttt1);
+
+                Log.e("Dbn", "onClick-----mLayoutManager.findLastVisibleItemPosition() = " + mLayoutManager.findLastVisibleItemPosition());
+                View view = mLayoutManager.getChildAt(mLayoutManager.findLastVisibleItemPosition() - firstV);
+                Log.e("Dbn", "onClick-----lastView top = " + view.getTop() + ", bottom = " + view.getBottom());
+                String tt = (String) ((TextView)view.findViewById(R.id.tv)).getText();
+                Log.e("Dbn", "onClick-----lastView txt = " + tt);*/
+
+
+
+                int firstV = mLayoutManager.findFirstVisibleItemPosition();
+                int firstCompleteV = mLayoutManager.findFirstCompletelyVisibleItemPosition();
+                int realP = firstV == firstCompleteV ? 0 : 1;
+                Log.e("Dbn", "onClick-----mLayoutManager.findFirstVisibleItemPosition() = " + firstV);
+                Log.e("Dbn", "onClick-----mLayoutManager.findFirstCompletelyVisibleItemPosition() = " + firstCompleteV);
+                View view0 = mLayoutManager.getChildAt(realP);
+                Log.e("Dbn", "onClick-----firstCompleteView top0 = " + view0.getTop() + ", bottom0 = " + view0.getBottom() + ", height = " + view0.getMeasuredHeight());
+                String ttt = (String) ((TextView)view0.findViewById(R.id.tv)).getText();
+                Log.e("Dbn", "onClick-----firstCompleteView txt = " + ttt);
             }
         });
 
@@ -144,7 +195,7 @@ public class RecycleFragment extends Fragment {
     private RecyclerView.Adapter getWrappedAdapter(RecyclerView.Adapter adapter) {
         WrappedRecyclerAdapter wrappedRecyclerAdapter = new WrappedRecyclerAdapter(adapter);
 
-        addHeaderFooter(1, wrappedRecyclerAdapter);
+//        addHeaderFooter(1, wrappedRecyclerAdapter);
 
         return wrappedRecyclerAdapter;
     }
@@ -378,6 +429,10 @@ public class RecycleFragment extends Fragment {
     }
 
     private static class RecycleViewHolder extends ViewHolder {
+        public TextView getTv() {
+            return mTv;
+        }
+
         private TextView mTv;
 
         public RecycleViewHolder(View itemView) {
@@ -450,7 +505,7 @@ public class RecycleFragment extends Fragment {
 
             for (int i = 0; i < count; i++) {
                 View child = parent.getChildAt(i);
-                LayoutParams params = (LayoutParams) child.getLayoutParams();
+                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child.getLayoutParams();
                 int top = child.getBottom() + params.bottomMargin;
                 int bottom = top + mDividerDrawable.getIntrinsicHeight();
 
@@ -466,7 +521,7 @@ public class RecycleFragment extends Fragment {
 
             for (int i = 0; i < count; i++) {
                 View child = parent.getChildAt(i);
-                LayoutParams params = (LayoutParams) child.getLayoutParams();
+                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child.getLayoutParams();
                 int left = child.getRight() + params.rightMargin;
                 int right = left + mDividerDrawable.getIntrinsicHeight();
 
